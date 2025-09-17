@@ -1,0 +1,61 @@
+name: Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL for load testing'
+        required: true
+        default: 'https://dev.foursale.com'
+      test_type:
+        description: 'Type of load test'
+        required: true
+        default: 'locust'
+        type: choice
+        options:
+        - locust
+        - k6
+        - artillery
+      duration:
+        description: 'Test duration (minutes)'
+        required: true
+        default: '5'
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        if: github.event.inputs.test_type == 'locust'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Setup Node.js
+        if: github.event.inputs.test_type == 'artillery'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install K6
+        if: github.event.inputs.test_type == 'k6'
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Run Load Test
+        run: |
+          chmod +x tests/run-load-tests.sh
+          cd tests
+          ./run-load-tests.sh ${{ github.event.inputs.target_url }} ${{ github.event.inputs.test_type }}
+      
+      - name: Upload Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: load-test-results
+          path: tests/*/report.*

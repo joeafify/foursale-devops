@@ -1,0 +1,83 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  container-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build backend image
+        run: docker build -t foursale/backend:latest app/backend/
+      
+      - name: Build frontend image
+        run: docker build -t foursale/frontend:latest app/frontend/
+      
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'foursale/backend:latest'
+          format: 'sarif'
+          output: 'backend-trivy-results.sarif'
+      
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'foursale/frontend:latest'
+          format: 'sarif'
+          output: 'frontend-trivy-results.sarif'
+      
+      - name: Upload backend scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'backend-trivy-results.sarif'
+      
+      - name: Upload frontend scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'frontend-trivy-results.sarif'
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          cd app/backend
+          npm ci
+      
+      - name: Run npm audit
+        run: |
+          cd app/backend
+          npm audit --audit-level=high
+
+  k8s-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Scan Kubernetes manifests
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: 'k8s/'
+          format: 'sarif'
+          output: 'k8s-trivy-results.sarif'
+      
+      - name: Upload K8s scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'k8s-trivy-results.sarif'
