@@ -155,20 +155,34 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       
+      - name: Check if cluster exists
+        id: cluster-check
+        run: |
+          if aws eks describe-cluster --region us-east-1 --name foursale-prod >/dev/null 2>&1; then
+            echo "cluster-exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "cluster-exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ EKS cluster 'foursale-prod' not found. Deploy infrastructure first."
+          fi
+      
       - name: Update kubeconfig
+        if: steps.cluster-check.outputs.cluster-exists == 'true'
         run: aws eks update-kubeconfig --region us-east-1 --name foursale-prod
       
       - name: Deploy security
+        if: steps.cluster-check.outputs.cluster-exists == 'true'
         run: |
           chmod +x security/install.sh
           ./security/install.sh
       
       - name: Deploy monitoring
+        if: steps.cluster-check.outputs.cluster-exists == 'true'
         run: |
           chmod +x monitoring/install.sh
           ./monitoring/install.sh
       
       - name: Deploy to prod
+        if: steps.cluster-check.outputs.cluster-exists == 'true'
         run: |
           helm upgrade --install foursale-prod k8s/helm/foursale-chart/ \
             --namespace foursale \
