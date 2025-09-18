@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>4Sale DevOps Platform</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<h1>🚀 4Sale DevOps Platform</h1>
+				<p>Task Management System</p>
+			</header>
+
+			<main>
+				<section class="task-form">
+					<h2>Add New Task</h2>
+					<form id="taskForm">
+						<input
+							type="text"
+							id="taskTitle"
+							placeholder="Task title"
+							required
+						/>
+						<textarea
+							id="taskDescription"
+							placeholder="Task description"
+						></textarea>
+						<button type="submit">Add Task</button>
+					</form>
+				</section>
+
+				<section class="tasks">
+					<h2>Tasks List</h2>
+					<div id="tasksList" class="tasks-list">
+						<!-- Tasks will be loaded here -->
+					</div>
+				</section>
+			</main>
+
+			<footer>
+				<p>Built with ❤️ for scalable DevOps</p>
+			</footer>
+		</div>
+
+		<script src="app.js"></script>
+	</body>
+</html>
