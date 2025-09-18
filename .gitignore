@@ -39,7 +39,6 @@ logs/
 # Test reports
 coverage/
 test-results/
-*.html
 
 # Build artifacts
 dist/
@@ -47,3 +46,5 @@ build/
 
 # AWS
 awscliv2.zip
+
+venv/

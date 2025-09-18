@@ -38,11 +38,13 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'backend-trivy-results.sarif'
+          category: 'trivy-backend'
       
       - name: Upload frontend scan results
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'frontend-trivy-results.sarif'
+          category: 'trivy-frontend'
 
   dependency-scan:
     runs-on: ubuntu-latest
@@ -81,3 +83,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'k8s-trivy-results.sarif'
+          category: 'trivy-k8s'
