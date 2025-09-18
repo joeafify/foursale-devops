@@ -68,19 +68,3 @@ jobs:
         run: |
           cd infrastructure/environments/${{ matrix.environment }}
           terraform apply -auto-approve tfplan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run Checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: infrastructure/
-          framework: terraform
-          output_format: sarif
-          output_file_path: checkov-results.sarif
-      
-      - name: Upload Checkov scan results
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: checkov-results.sarif
